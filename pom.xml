@@ -25,6 +25,7 @@
 		<module>services/vets-service</module>
 		<module>services/visits-service</module>
 		<module>api-gateway</module>
+		<module>tests/parity-tests</module>
 	</modules>
 
 	<properties>

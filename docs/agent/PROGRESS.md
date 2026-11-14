@@ -9,7 +9,7 @@
 | 4 vets-service | feature/vets-service | ✅ hecho | `.\mvnw.cmd -B -pl services/vets-service -am test` → `Tests run: 16, Failures: 0`, `BUILD SUCCESS` | REST paginado + `/vets/all` con contrato `vetList`, caché Caffeine (`BR-VET-04` verificada con Mockito), seeds y OpenAPI |
 | 5 visits-service | feature/visits-service | ✅ hecho | `.\mvnw.cmd -B -pl services/visits-service -am test` → `Tests run: 29, Failures: 0`, `BUILD SUCCESS` | Cliente `@HttpExchange` + `RestClient` con timeouts, 404/503 remotos, fecha futura y bulk `/pets/visits` |
 | 6 api-gateway | feature/api-gateway | ✅ hecho | `.\mvnw.cmd -B -pl api-gateway -am test` → `Tests run: 13, Failures: 0`, `BUILD SUCCESS` | Rutas `/api/customers`, `/api/vets`, `/api/visits` (Gateway MVC 5.0.4), composición `/api/owners/{id}/details`, Swagger agregado y `/api/system/boom` |
-| 7 Paridad, calidad, Docker, CI | feature/parity-tests-and-docker | pendiente | | |
+| 7 Paridad, calidad, Docker, CI | feature/parity-tests-and-docker | ✅ hecho | `.\mvnw.cmd -B verify` → **117 tests, 0 fallos**, 7 módulos `SUCCESS`; `ParityTraceabilityTests` 2/2 | JaCoCo: customers 93,3 %, vets 96,6 %, visits 96,6 %, gateway 97,3 % de líneas. `Dockerfile` + `docker-compose.yml` + `ci.yml` (JDK 21) |
 | 8 Documentación | feature/documentation | pendiente | | |
 | 9 Release y publicación | release/1.0.0 | pendiente | | |
 

@@ -195,13 +195,22 @@ class OwnerControllerTests {
 	}
 
 	@Test
-	void updateUsesTheIdentifierFromTheUrl() throws Exception {
+	void BR_OWN_13_updateUsesTheIdentifierFromTheUrl() throws Exception {
 		given(this.owners.update(eq(7), any(OwnerRequest.class))).willReturn(details());
 
 		this.mockMvc.perform(put("/owners/7").contentType(MediaType.APPLICATION_JSON).content(VALID_OWNER))
 			.andExpect(status().isOk());
 
 		verify(this.owners).update(eq(7), any(OwnerRequest.class));
+	}
+
+	@Test
+	void BR_SYS_02_telephoneMessageComesFromTheMessageBundle() throws Exception {
+		String body = VALID_OWNER.replace("\"6085551023\"", "\"123\"");
+
+		this.mockMvc.perform(post("/owners").contentType(MediaType.APPLICATION_JSON).content(body))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.errors[0].message").value("Telephone must be a 10-digit number"));
 	}
 
 }

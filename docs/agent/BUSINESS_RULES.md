@@ -19,10 +19,10 @@
 | BR-OWN-07 | Paginación de búsqueda: tamaño **5**; `page < 1` o `page > max(totalPages,1)` → se sirve la **página 1** (ADR-004) | `OwnerController` | `OwnerServiceTests#BR_OWN_07_pageBeyondTheLastPageIsServedAsFirstPage`, `CustomersServiceIntegrationTests#outOfRangePageIsServedAsFirstPageWithoutRedirecting` |
 | BR-OWN-08 | Sin resultados → **200 con página vacía** (antes: error de vista `notFound`); exactamente 1 resultado → se devuelve en `content` (antes: redirect al detalle) | `OwnerController` | `OwnerServiceTests#BR_OWN_08_noMatchesReturnsAnEmptyPageInsteadOfAnError` |
 | BR-OWN-09 | Owner inexistente → **404** (antes `IllegalArgumentException` → 500) | `findOwner`/`showOwner` | `OwnerServiceTests#BR_OWN_09_unknownOwnerIsANotFound`, `OwnerControllerTests#BR_OWN_09_*`, `CustomersServiceIntegrationTests#unknownOwnerIsAProblemDetail404` |
-| BR-OWN-10 | El `id` del cuerpo nunca manda: en update manda el de la URL; si el cuerpo trae `id`, se ignora | `processUpdateOwnerForm` | `OwnerControllerTests#BR_OWN_10_and_BR_OWN_11_identifierInTheBodyIsIgnored`, `#updateUsesTheIdentifierFromTheUrl` |
+| BR-OWN-10 | El `id` del cuerpo nunca manda: en update manda el de la URL; si el cuerpo trae `id`, se ignora | `processUpdateOwnerForm` | `OwnerControllerTests#BR_OWN_10_and_BR_OWN_11_identifierInTheBodyIsIgnored`, `#BR_OWN_13_updateUsesTheIdentifierFromTheUrl` |
 | BR-OWN-11 | El cliente no puede fijar `id` ni `*.id` | `@InitBinder` | `OwnerControllerTests#BR_OWN_10_and_BR_OWN_11_*` |
 | BR-OWN-12 | Un `page < 1` **no debe romper** el paginado: se satura a 1 antes de `PageRequest.of` (commits `0d064b0`, `b33136f`) | `OwnerController`, `VetController` | `OwnerServiceTests#BR_OWN_12_pageBelowOneIsClampedInsteadOfBreakingTheQuery` |
-| BR-OWN-13 | **(nueva)** En update el `id` se **fuerza** al de la URL | `processUpdateOwnerForm` | `OwnerControllerTests#updateUsesTheIdentifierFromTheUrl` |
+| BR-OWN-13 | **(nueva)** En update el `id` se **fuerza** al de la URL | `processUpdateOwnerForm` | `OwnerControllerTests#BR_OWN_13_updateUsesTheIdentifierFromTheUrl` |
 | BR-OWN-14 | **(nueva)** El listado no define `Sort` en el original; aquí se fija un orden estable (`lastName, firstName, id`) | `OwnerRepository` | `OwnerServiceTests#BR_OWN_14_paginationUsesAStableSort`, `CustomersRepositoryTests#BR_OWN_14_pagesAreStableWithTheDocumentedSort` |
 
 ## Pets — `owner/Pet.java`, `PetValidator.java`, `PetController.java`
@@ -40,7 +40,7 @@
 | BR-PET-09 | Pets de un owner ordenados por nombre; visitas ordenadas por fecha | `@OrderBy` | `CustomersRepositoryTests#BR_PET_09_petsOfAnOwnerAreOrderedByName` (visitas en `visits-service`) |
 | BR-PET-10 | **(nueva)** El `type` debe existir; un tipo desconocido es `400`, nunca un tipo inventado | `PetTypeFormatter` | `PetServiceTests#BR_PET_10_unknownPetTypeIsAClientError` |
 | BR-PET-11 | **(nueva)** `Owner.addPet` del original ignoraba duplicados en memoria | `Owner.addPet` | **No se conserva**: el agregado es bidireccional y los duplicados los rechaza el servicio + la constraint (BR-PET-04/06). Ver `MIGRATION.md` §4 |
-| BR-PET-12 | **(nueva)** Un `petId` que no pertenece al owner en el formulario de visita → `404` | `VisitController.loadPetWithVisit` | `VisitServiceTests#BR_VIS_03_and_BR_VIS_05_*`, `CustomersGatewayTests#BR_VIS_03_a404FromCustomersIsA404` |
+| BR-PET-12 | **(nueva)** Un `petId` que no pertenece al owner en el formulario de visita → `404` | `VisitController.loadPetWithVisit` | `VisitServiceTests#BR_PET_12_aPetThatDoesNotBelongToTheOwnerCannotBeUsedForAVisit`, `CustomersGatewayTests#BR_VIS_03_a404FromCustomersIsA404` |
 
 ## Visits — `owner/Visit.java`, `VisitController.java`
 
@@ -67,7 +67,7 @@
 | ID | Regla | Origen | Test |
 |---|---|---|---|
 | BR-SYS-01 | Endpoint que provoca un error intencionado (HTTP 500) para demostrar el manejo de errores | `CrashController` | `GatewayIntegrationTests#BR_SYS_01_boomEndpointFailsOnPurpose` (`/api/system/boom`) |
-| BR-SYS-02 | i18n de mensajes de validación (incl. `telephone.invalid`) | `resources/messages` | `OwnerControllerTests#BR_OWN_05_*` (mensaje traducido desde `ValidationMessages.properties`) |
+| BR-SYS-02 | i18n de mensajes de validación (incl. `telephone.invalid`) | `resources/messages` | `OwnerControllerTests#BR_SYS_02_telephoneMessageComesFromTheMessageBundle` |
 | BR-SYS-03 | Datos semilla idénticos al original: 10 owners, 13 pets, 6 types, 6 vets, 3 specialties, 4 visits | `db/h2/data.sql` | `CustomersRepositoryTests#BR_SYS_03_seedDataIsTheLegacyOne` (owners/pets/types) + Fase 4 (vets) + Fase 5 (visits) |
 | BR-SYS-04 | Perfiles MySQL/PostgreSQL soportados | `application-*.properties`, `db/*/schema.sql` | Fase 8 (documentado; H2 por defecto) |
 | BR-SYS-05 | **(nueva)** Actuator exponía **todos** los endpoints en el monolito; aquí se limita a `health,info,metrics` | `application.properties` | Verificado en `application.properties` de cada servicio |

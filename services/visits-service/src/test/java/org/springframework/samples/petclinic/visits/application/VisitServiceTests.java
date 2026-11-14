@@ -127,4 +127,13 @@ class VisitServiceTests {
 			.hasMessageContaining("must not be empty");
 	}
 
+	@Test
+	void BR_PET_12_aPetThatDoesNotBelongToTheOwnerCannotBeUsedForAVisit() {
+		willThrow(new ResourceNotFoundException("Pet 9 of owner", 1)).given(this.customers)
+			.ensurePetBelongsToOwner(1, 9);
+
+		assertThatThrownBy(() -> this.service.findByPet(1, 9)).isInstanceOf(ResourceNotFoundException.class)
+			.hasMessageContaining("Pet 9 of owner with id 1 not found");
+	}
+
 }
