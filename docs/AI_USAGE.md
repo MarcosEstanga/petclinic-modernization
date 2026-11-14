@@ -204,3 +204,32 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
   - Un cast a `Map<?, ?>` en un test no compilaba (`capture#1 of ?`); se tipó como
     `Map<String, Object>`.
 
+### 2026-11-14 — Fase 7: paridad, cobertura, Docker y CI
+
+- **Herramienta / modelo:** OpenCode — DeepSeek V4.1 Flash.
+- **Objetivo:** garantizar que cada regla tiene test con su ID, medir cobertura, dockerizar y dejar
+  una CI reproducible.
+- **Prompt (resumen):** «Implementa la Fase 7: suite de paridad, JaCoCo, Dockerfile/compose y
+  GitHub Actions con JDK 21.»
+- **Resultado de la IA:**
+  - Nuevo módulo `tests/parity-tests` con `ParityTraceabilityTests`: parsea
+    `BUSINESS_RULES.md` y falla si una regla no aparece como `BR_*` en ningún test.
+  - `docs/TESTING.md` con pirámide, cobertura real por módulo y tabla regla → test.
+  - `Dockerfile` multi-stage (build con `./mvnw -pl … -am`, runtime `temurin:21-jre`) + 
+    `docker-compose.yml` con healthchecks y `depends_on` por condición.
+  - `.github/workflows/ci.yml` (JDK 21, `./mvnw -B verify`, artefacto JaCoCo); se eliminaron
+    `maven-build.yml` (sustituido), `gradle-build.yml`, `deploy-and-test-cluster.yml` (sin k8s) y
+    `.github/dco.yml` (exigía *sign-off* que este repositorio no usa).
+- **Validación humana/automática:**
+  - El guardián de paridad **falló a la primera** y detectó 3 reglas sin test con su ID
+    (`BR-OWN-13`, `BR-PET-12`, `BR-SYS-02`); se renombraron/añadieron los tests y ahora pasa 2/2.
+  - `./mvnw verify`: **117 tests, 0 fallos**; cobertura de líneas 93,3 % / 96,6 % / 96,6 % / 97,3 %.
+  - `docker-compose.yml` **no se ha podido construir**: no hay Docker en la máquina. Se declara como
+    limitación y se valida solo por revisión (la CI no arranca contenedores).
+- **Correcciones aplicadas:**
+  - Nombre de mensaje en `BR_PET_12`: el test esperaba «Pet 9 of owner 1 not found» y el
+    `ResourceNotFoundException` produce «Pet 9 of owner with id 1 not found»; se ajustó la
+    aserción (fallo real detectado por el propio test).
+  - Se descartó añadir `spring.cloud.gateway.httpclient.*` (no aplica al gateway MVC) y se documentó
+    que los timeouts de las rutas proxied dependen del cliente del gateway.
+
