@@ -1,0 +1,60 @@
+### PetClinic · Gateway (composición, errores y documentación)
+@gateway = http://localhost:8080
+
+### 1. Composición: owner + mascotas + visitas de cada mascota
+GET {{gateway}}/api/owners/6/details
+
+### 2. Owner inexistente: 404 con ProblemDetail
+GET {{gateway}}/api/owners/999/details
+
+### 3. Error intencionado (portado de /oups, BR-SYS-01) → 500
+GET {{gateway}}/api/system/boom
+
+### 4. Swagger UI con las cuatro especificaciones (customers, vets, visits, gateway)
+GET {{gateway}}/swagger-ui.html
+
+### 5. OpenAPI del propio gateway
+GET {{gateway}}/v3/api-docs
+
+### 6. Salud de los servicios
+GET {{gateway}}/actuator/health
+GET http://localhost:8081/actuator/health
+GET http://localhost:8082/actuator/health
+GET http://localhost:8083/actuator/health
+
+### 7. Flujo E2E: crear owner → mascota → visita → composición
+POST {{gateway}}/api/customers/owners
+Content-Type: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Lovelace",
+  "address": "12 Analytical St.",
+  "city": "London",
+  "telephone": "6000000001"
+}
+
+### (usa el id devuelto arriba)
+
+POST {{gateway}}/api/customers/owners/11/pets
+Content-Type: application/json
+
+{
+  "name": "Ada's cat",
+  "birthDate": "2020-02-02",
+  "typeId": 1
+}
+
+###
+
+POST {{gateway}}/api/visits/owners/11/pets/14/visits
+Content-Type: application/json
+
+{
+  "date": "2027-01-15",
+  "description": "first visit"
+}
+
+###
+
+GET {{gateway}}/api/owners/11/details

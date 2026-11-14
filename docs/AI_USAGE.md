@@ -233,3 +233,28 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
   - Se descartó añadir `spring.cloud.gateway.httpclient.*` (no aplica al gateway MVC) y se documentó
     que los timeouts de las rutas proxied dependen del cliente del gateway.
 
+### 2026-11-14 — Fase 8: documentación
+
+- **Herramienta / modelo:** OpenCode — DeepSeek V4.1 Flash.
+- **Objetivo:** README ejecutable, arquitectura con ADRs, contrato REST, pruebas y migración.
+- **Prompt (resumen):** «Implementa la Fase 8: README, ARCHITECTURE, API, TESTING, MIGRATION,
+  AI_USAGE y colección `.http`.»
+- **Resultado de la IA:**
+  - `README.md` completo (quick start en 5 comandos, Docker Compose, URLs, API en 30 segundos,
+    tests, estructura, GitFlow, limitaciones).
+  - `docs/API.md` con tablas, ejemplos y modelo de errores; `docs/http/*.http` con flujos E2E
+    (incluido el flujo crear owner → mascota → visita → composición).
+  - `docs/ARCHITECTURE.md` ampliado (contenedores/CI, reescritura de rutas) y `docs/MIGRATION.md`
+    con herramientas retiradas, estructura final y tabla de qué se migró y qué no.
+- **Validación humana/automática:**
+  - Todos los comandos del README se ejecutaron durante las fases anteriores (`./mvnw verify`,
+    `spring-boot:run` por módulo, `curl` contra el gateway en los tests de integración).
+  - Los ejemplos de `docs/API.md` se contrastaron con las respuestas reales de los tests
+    (`OwnerDetailsView`, `VetResponse`, `VisitResponse`).
+  - `docker compose` queda marcado explícitamente como **no ejecutado** (sin Docker).
+- **Correcciones aplicadas:**
+  - El primer borrador del README prometía `docker compose up` como si estuviera probado; se añadió
+    el aviso de que no se pudo ejecutar en esta máquina.
+  - Se corrigió la numeración de secciones de `ARCHITECTURE.md` al insertar «Contenedores, CI y
+    calidad» (quedaban 4, 7, 8, 6).
+
