@@ -40,9 +40,8 @@
 
 ## Bloqueos / decisiones pendientes del usuario
 
-- **Publicación en GitHub**: el usuario decidió no publicar por ahora (2026-11-14). Todo está listo
-  para `gh repo create <usuario>/petclinic-modernization --public --source . --remote origin` y el
-  push de ramas/tags (ver §«Publicación»).
+- Ninguno. Publicación realizada el 2026-11-14 en
+  https://github.com/MarcosEstanga/petclinic-modernization (ver §«Publicación»).
 
 ## Prueba de humo desde clon limpio (Fase 9)
 
@@ -72,23 +71,20 @@ SMOKE TEST OK
 Script reproducible: [`scripts/smoke-test.ps1`](../../scripts/smoke-test.ps1)
 (`powershell -File scripts/smoke-test.ps1 -JavaHome <JDK21>`).
 
-## Publicación (pendiente de confirmación)
+## Publicación
+
+- **Repositorio público**: https://github.com/MarcosEstanga/petclinic-modernization
+- Creado con `gh repo create MarcosEstanga/petclinic-modernization --public --source . --remote origin`
+  y publicado con `git push -u origin --all` + `git push origin --tags`.
+- Ramas publicadas: `main`, `develop`, las 8 `feature/*` y `release/1.0.0`; tags `v1.0.0` y
+  `legacy-java21`.
+
+Para republicar en otra cuenta:
 
 ```bash
-# 1. Autenticarse una sola vez
-gh auth login
-
-# 2. Crear el repositorio público y añadirlo como origin
 gh repo create <usuario>/petclinic-modernization --public --source . --remote origin
-
-# 3. Subir todo el historial, todas las ramas y los tags
 git push -u origin --all
 git push origin --tags
-
-# 4. Comprobar la CI y el tag
 gh run list --limit 5
-gh run watch
 gh release create v1.0.0 --title "v1.0.0" --notes-file CHANGELOG.md
 ```
-
-Después, actualizar el badge del README y el enlace `[1.0.0]` del `CHANGELOG.md` con la URL real.

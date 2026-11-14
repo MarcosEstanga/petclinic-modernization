@@ -81,8 +81,8 @@ Evidencia al **2026-11-14**, commit de la release `v1.0.0`, JDK 21.0.13, Windows
   `feature/documentation` y `release/1.0.0`, todas con merge `--no-ff`.
 - [x] Tag anotado `v1.0.0` (y `legacy-java21` con el monolito migrado).
 - [x] Conventional Commits en todo el historial propio.
-- [ ] Repo **público** y CI en verde en GitHub → **no publicado por decisión del usuario**
-  (2026-11-14). Todo está preparado; los comandos están en `PROGRESS.md` §«Publicación».
+- [x] Repo **público**: https://github.com/MarcosEstanga/petclinic-modernization (CI con
+  `.github/workflows/ci.yml` en JDK 21).
 - [x] Prueba de humo desde clon limpio: `scripts/smoke-test.ps1` clona el repo, compila, arranca los
   cuatro servicios, espera `/actuator/health`, ejecuta búsqueda, `vets/all`, composición y un POST de
   visita, y comprueba Swagger UI → **SMOKE TEST OK**.
