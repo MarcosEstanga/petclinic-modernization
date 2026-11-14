@@ -50,4 +50,4 @@ microservicios REST documentados.
 - Historial completo del repositorio upstream y el monolito migrado en el tag anotado
   `legacy-java21`.
 
-[1.0.0]: tag v1.0.0
+[1.0.0]: https://github.com/MarcosEstanga/petclinic-modernization/releases/tag/v1.0.0
