@@ -1,0 +1,96 @@
+### PetClinic · Customers (a través del gateway)
+### Requiere: gateway en :8080 y customers-service en :8081
+@baseUrl = http://localhost:8080/api/customers
+
+### 1. Listar tipos de mascota (ordenados por nombre)
+GET {{baseUrl}}/petTypes
+
+### 2. Buscar owners por prefijo de apellido (case-insensitive, tamaño 5)
+GET {{baseUrl}}/owners?lastName=Fra&page=1&size=5
+
+### 3. Página fuera de rango: se sirve la página 1 y se reporta en el payload (ADR-004)
+GET {{baseUrl}}/owners?page=99&size=5
+
+### 4. Tamaño inválido: 400 con ProblemDetail
+GET {{baseUrl}}/owners?size=500
+
+### 5. Detalle de un owner (incluye mascotas)
+GET {{baseUrl}}/owners/1
+
+### 6. Owner inexistente: 404 con ProblemDetail
+GET {{baseUrl}}/owners/999
+
+### 7. Crear un owner
+POST {{baseUrl}}/owners
+Content-Type: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Lovelace",
+  "address": "12 Analytical St.",
+  "city": "London",
+  "telephone": "6000000001"
+}
+
+### 8. Validación: teléfono con 9 dígitos → 400 (BR-OWN-05)
+POST {{baseUrl}}/owners
+Content-Type: application/json
+
+{
+  "firstName": "Ada",
+  "lastName": "Lovelace",
+  "address": "12 Analytical St.",
+  "city": "London",
+  "telephone": "600000001"
+}
+
+### 9. Crear una mascota para el owner 1 (Leo ya existe: usa otro nombre)
+POST {{baseUrl}}/owners/1/pets
+Content-Type: application/json
+
+{
+  "name": "Ada's cat",
+  "birthDate": "2020-02-02",
+  "typeId": 1
+}
+
+### 10. Nombre duplicado en el mismo owner (case-insensitive) → 409 (BR-PET-04)
+POST {{baseUrl}}/owners/1/pets
+Content-Type: application/json
+
+{
+  "name": "leo",
+  "birthDate": "2020-02-02",
+  "typeId": 1
+}
+
+### 11. Fecha de nacimiento futura → 400 (BR-PET-03)
+POST {{baseUrl}}/owners/1/pets
+Content-Type: application/json
+
+{
+  "name": "Future pet",
+  "birthDate": "2999-01-01",
+  "typeId": 1
+}
+
+### 12. Actualizar un owner (el id manda desde la URL)
+PUT {{baseUrl}}/owners/1
+Content-Type: application/json
+
+{
+  "firstName": "George",
+  "lastName": "Franklin",
+  "address": "110 W. Liberty St.",
+  "city": "Madison",
+  "telephone": "6085551023"
+}
+
+### 13. Actualizar una mascota omitiendo el tipo (se conserva el actual, BR-PET-02)
+PUT {{baseUrl}}/owners/1/pets/1
+Content-Type: application/json
+
+{
+  "name": "Leo",
+  "birthDate": "2010-09-07"
+}

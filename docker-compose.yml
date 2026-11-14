@@ -1,21 +1,89 @@
+# PetClinic modernization — one container per service, each with its own in-memory H2 database.
+#
+#   docker compose up --build
+#   http://localhost:8080/swagger-ui.html
+#
+# The images are built with the root Dockerfile (build-arg MODULE / PORT).
+name: petclinic
+
 services:
-  mysql:
-    image: mysql:9.7
+
+  customers-service:
+    build:
+      context: .
+      args:
+        MODULE: services/customers-service
+        PORT: 8081
+    image: petclinic/customers-service:1.0.0
     ports:
-      - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=
-      - MYSQL_ALLOW_EMPTY_PASSWORD=true
-      - MYSQL_USER=petclinic
-      - MYSQL_PASSWORD=petclinic
-      - MYSQL_DATABASE=petclinic
-    volumes:
-      - "./conf.d:/etc/mysql/conf.d:ro"
-  postgres:
-    image: postgres:18.4
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  visits-service:
+    build:
+      context: .
+      args:
+        MODULE: services/visits-service
+        PORT: 8082
+    image: petclinic/visits-service:1.0.0
     ports:
-      - "5432:5432"
+      - "8082:8082"
     environment:
-      - POSTGRES_PASSWORD=petclinic
-      - POSTGRES_USER=petclinic
-      - POSTGRES_DB=petclinic
+      CUSTOMERS_SERVICE_URL: http://customers-service:8081
+    depends_on:
+      customers-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  vets-service:
+    build:
+      context: .
+      args:
+        MODULE: services/vets-service
+        PORT: 8083
+    image: petclinic/vets-service:1.0.0
+    ports:
+      - "8083:8083"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  api-gateway:
+    build:
+      context: .
+      args:
+        MODULE: api-gateway
+        PORT: 8080
+    image: petclinic/api-gateway:1.0.0
+    ports:
+      - "8080:8080"
+    environment:
+      CUSTOMERS_SERVICE_URL: http://customers-service:8081
+      VETS_SERVICE_URL: http://vets-service:8083
+      VISITS_SERVICE_URL: http://visits-service:8082
+    depends_on:
+      customers-service:
+        condition: service_healthy
+      vets-service:
+        condition: service_healthy
+      visits-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
