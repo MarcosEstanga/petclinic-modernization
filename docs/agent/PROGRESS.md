@@ -6,7 +6,7 @@
 | 1 Java 21 | feature/java21-migration | ✅ hecho | `.\mvnw.cmd -B verify` (JDK 21.0.13) → `Tests run: 79, Failures: 0, Errors: 0, Skipped: 2` · `BUILD SUCCESS` (52 s) · checkstyle: `0 Checkstyle violations` | `java.version=21`, records (`Vets`), `getFirst()` (SequencedCollection), hilos virtuales, checks de CI y Gradle a 21, JAXB muerto eliminado. Tag `legacy-java21` |
 | 2 Esqueleto multi-módulo | feature/multimodule-skeleton | ✅ hecho | `.\mvnw.cmd -B verify` → 6 módulos `SUCCESS`, 4 tests de contexto, `BUILD SUCCESS` (53 s) | Parent `packaging=pom`, `libs/common-web`, 3 servicios + gateway; monolito retirado a tag `legacy-java21` |
 | 3 customers-service | feature/customers-service | ✅ hecho | `.\mvnw.cmd -B verify` → `Tests run: 55` en el módulo (58 en total), `BUILD SUCCESS` | Owners/pets/petTypes REST con ProblemDetail, OpenAPI, 409 en duplicados, paginación ADR-004 y tests de paridad BR-OWN/BR-PET |
-| 4 vets-service | feature/vets-service | pendiente | | |
+| 4 vets-service | feature/vets-service | ✅ hecho | `.\mvnw.cmd -B -pl services/vets-service -am test` → `Tests run: 16, Failures: 0`, `BUILD SUCCESS` | REST paginado + `/vets/all` con contrato `vetList`, caché Caffeine (`BR-VET-04` verificada con Mockito), seeds y OpenAPI |
 | 5 visits-service | feature/visits-service | pendiente | | |
 | 6 api-gateway | feature/api-gateway | pendiente | | |
 | 7 Paridad, calidad, Docker, CI | feature/parity-tests-and-docker | pendiente | | |
