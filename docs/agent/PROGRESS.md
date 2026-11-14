@@ -4,7 +4,7 @@
 |---|---|---|---|---|
 | 0 Setup y análisis | feature/analysis | ✅ hecho | `.\mvnw.cmd -B test` → `Tests run: 79, Failures: 0, Errors: 0, Skipped: 2` · `BUILD SUCCESS` (1:25 min) | Línea base con JDK 17. `docs/ANALYSIS.md` creado; `BUSINESS_RULES.md` validado (+5 reglas, 1 corregida) |
 | 1 Java 21 | feature/java21-migration | ✅ hecho | `.\mvnw.cmd -B verify` (JDK 21.0.13) → `Tests run: 79, Failures: 0, Errors: 0, Skipped: 2` · `BUILD SUCCESS` (52 s) · checkstyle: `0 Checkstyle violations` | `java.version=21`, records (`Vets`), `getFirst()` (SequencedCollection), hilos virtuales, checks de CI y Gradle a 21, JAXB muerto eliminado. Tag `legacy-java21` |
-| 2 Esqueleto multi-módulo | feature/multimodule-skeleton | pendiente | | |
+| 2 Esqueleto multi-módulo | feature/multimodule-skeleton | ✅ hecho | `.\mvnw.cmd -B verify` → 6 módulos `SUCCESS`, 4 tests de contexto, `BUILD SUCCESS` (53 s) | Parent `packaging=pom`, `libs/common-web`, 3 servicios + gateway; monolito retirado a tag `legacy-java21` |
 | 3 customers-service | feature/customers-service | pendiente | | |
 | 4 vets-service | feature/vets-service | pendiente | | |
 | 5 visits-service | feature/visits-service | pendiente | | |
