@@ -18,26 +18,24 @@ package org.springframework.samples.petclinic.vet;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlRootElement;
-
 /**
- * Simple domain object representing a list of veterinarians. Mostly here to be used for
- * the 'vets' {@link org.springframework.web.servlet.view.xml.MarshallingView}.
+ * Simple domain object representing a list of veterinarians. Mostly here to be used as
+ * the top-level object of the '{@code /vets}' representation, so that JSON marshalling
+ * always produces an object (and not a bare array).
+ * <p>
+ * Since the Java 21 migration it is an immutable {@link Record}: the wrapper is
+ * serialized by Jackson as {@code { "vetList": [ ... ] }} using the record component
+ * name.
  *
  * @author Arjen Poutsma
  */
-@XmlRootElement
-public class Vets {
+public record Vets(List<Vet> vetList) {
 
-	private List<Vet> vets;
-
-	@XmlElement
-	public List<Vet> getVetList() {
-		if (vets == null) {
-			vets = new ArrayList<>();
-		}
-		return vets;
+	/**
+	 * Creates an empty, mutable list of vets.
+	 */
+	public Vets() {
+		this(new ArrayList<>());
 	}
 
 }
