@@ -56,9 +56,33 @@ Se aplican **donde aportan**, evitando reescribir lógica solo por lucir feature
   nunca funcionó (ver BR-VET-02b en `BUSINESS_RULES.md`). Mantener anotaciones muertas induce a
   error; el soporte XML, si se recupera, se hará con `jackson-dataformat-xml` (opción de recorte #1).
 
-## 3. Decisiones de comportamiento (ADR resumidos)
+### 2.4 Herramientas y artefactos retirados
+
+| Artefacto | Acción | Motivo |
+|---|---|---|
+| `build.gradle`, `settings.gradle`, `gradlew*`, `gradle/` | eliminados | Doble build mantenía dos fuentes de verdad; la CI solo usa Maven |
+| `k8s/`, `.github/workflows/deploy-and-test-cluster.yml` | eliminados | El despliegue a clúster no forma parte del alcance y la imagen no se puede probar aquí |
+| `.github/workflows/gradle-build.yml` | eliminado | Sin Gradle |
+| `.github/workflows/maven-build.yml` | sustituido por `ci.yml` | Un único workflow con JDK 21, `verify` y artefacto JaCoCo |
+| `.github/dco.yml` | eliminado | Exigía *sign-off* en cada commit (política del upstream, no de este repo) |
+| `src/checkstyle/**` | eliminado | El reactor multi-módulo no usa Checkstyle; se mantiene `spring-javaformat` |
+| `src/main/resources/templates`, `static`, `scss` | eliminados (tag `legacy-java21`) | UI fuera de alcance |
+| `src/test/jmeter` | eliminado (tag `legacy-java21`) | Pruebas de carga fuera de alcance |
+
+### 2.5 Estructura final
+
+```
+pom.xml (parent, Java 21) → libs/common-web, services/{customers,vets,visits}-service, api-gateway, tests/parity-tests
+```
+
+Cada servicio sigue la misma estructura de paquetes (`api` → `application` → `domain`, con
+`infrastructure` para repositorios/clientes/configuración), lo que hace la migración del monolito
+predecible: cada controlador MVC se convirtió en un controlador REST con DTOs `record`, cada regla de
+validación en un test con su ID y cada vista en una respuesta JSON.
 
 Los ADRs completos, con contexto/consecuencias, están en `docs/ARCHITECTURE.md`.
+
+## 3. Decisiones de comportamiento (ADR resumidos)
 
 | ADR | Decisión | Motivo |
 |---|---|---|
@@ -81,10 +105,36 @@ Los ADRs completos, con contexto/consecuencias, están en `docs/ARCHITECTURE.md`
 | 6 | Búsqueda case-insensitive dependiente de H2 | `LOWER()`/`IgnoreCase` explícito en el repositorio | Igual comportamiento en H2/Postgres/MySQL |
 | 7 | Listado sin orden estable | Orden fijo `lastName, firstName, id` | La paginación debe ser determinista (BR-OWN-14) |
 
-## 5. Cómo verificar la migración de esta fase
+## 5. Cómo verificar la migración
 
-```powershell
-$env:JAVA_HOME='C:\Program Files\Eclipse Adoptium\jdk-21.0.x-hotspot'   # o el JDK 21 que uses
-java -version        # debe reportar 21
-.\mvnw.cmd -B verify # BUILD SUCCESS, mismo nº de tests que la línea base (79) o más
+```bash
+# JDK 21
+export JAVA_HOME=/ruta/al/jdk-21        # Windows: $env:JAVA_HOME='C:\...\jdk-21'
+java -version                           # 21.x
+
+./mvnw -B verify                        # 117 tests + paridad + JaCoCo
+docker compose up --build               # opcional, requiere Docker
+curl http://localhost:8080/api/owners/6/details
 ```
+
+En la máquina de desarrollo la verificación se hizo con **Temurin 21.0.13**:
+
+```
+Tests run: 117, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
+
+(el resumen por módulo y la cobertura están en `docs/TESTING.md`).
+
+## 6. Lo que se migró y lo que no
+
+| Original | Estado | Dónde |
+|---|---|---|
+| Entidades, repositorios y reglas de owners/pets | migrado a REST | `customers-service` |
+| Visitas (fecha futura, pertenencia al owner) | migrado + validación remota | `visits-service` |
+| Vets y especialidades (solo lectura, caché) | migrado | `vets-service` |
+| `/vets` JSON con `vetList` | migrado | `vets-service` `/vets/all` |
+| Vistas Thymeleaf, SCSS, WebJars, i18n de UI | **no** migrado (fuera de alcance) | tag `legacy-java21` |
+| Página `ownerDetails` | migrado como composición REST | `api-gateway` `/api/owners/{id}/details` |
+| `/oups` | migrado como `/api/system/boom` | `api-gateway` |
+| Perfiles MySQL/PostgreSQL | documentados, no implementados por servicio | `MIGRATION.md` §1 |

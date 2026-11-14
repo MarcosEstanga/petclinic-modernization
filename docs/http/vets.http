@@ -1,0 +1,21 @@
+### PetClinic · Vets (a través del gateway)
+### Requiere: gateway en :8080 y vets-service en :8083
+@baseUrl = http://localhost:8080/api/vets
+
+### 1. Listado paginado (tamaño 5 por defecto) con metadatos
+GET {{baseUrl}}?page=1&size=5
+
+### 2. Listado completo en el contrato legacy { "vetList": [...] } (BR-VET-02)
+GET {{baseUrl}}/all
+
+### 3. Página fuera de rango: se sirve la página 1 (BR-VET-01)
+GET {{baseUrl}}?page=42
+
+### 4. Tamaño inválido → 400
+GET {{baseUrl}}?size=0
+
+### 5. La respuesta está cacheada (BR-VET-04): llama dos veces y compara tiempos
+GET {{baseUrl}}/all
+
+### 6. OpenAPI del servicio
+GET http://localhost:8080/api/vets/v3/api-docs

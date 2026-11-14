@@ -1,0 +1,42 @@
+### PetClinic · Visits (a través del gateway)
+### Requiere: gateway (:8080), visits-service (:8082) y customers-service (:8081)
+@baseUrl = http://localhost:8080/api/visits
+
+### 1. Visitas del pet 7 (Samantha, owner 6), ordenadas por fecha (BR-PET-09)
+GET {{baseUrl}}/owners/6/pets/7/visits
+
+### 2. Reservar una visita (fecha estrictamente futura, BR-VIS-02)
+POST {{baseUrl}}/owners/6/pets/7/visits
+Content-Type: application/json
+
+{
+  "date": "2027-01-15",
+  "description": "annual checkup"
+}
+
+### 3. Fecha de hoy → 400 (BR-VIS-02)
+POST {{baseUrl}}/owners/6/pets/7/visits
+Content-Type: application/json
+
+{
+  "date": "2026-11-14",
+  "description": "too late"
+}
+
+### 4. Descripción de 256 caracteres → 400 (BR-VIS-01)
+POST {{baseUrl}}/owners/6/pets/7/visits
+Content-Type: application/json
+
+{
+  "date": "2027-01-15",
+  "description": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}
+
+### 5. Pet que no pertenece al owner → 404 (BR-VIS-03)
+GET {{baseUrl}}/owners/1/pets/7/visits
+
+### 6. Consulta masiva usada por el gateway
+GET {{baseUrl}}/pets/visits?petId=7,8
+
+### 7. Con customers-service parado → 503 (ADR-005)
+GET {{baseUrl}}/owners/6/pets/7/visits

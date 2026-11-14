@@ -45,9 +45,12 @@ petclinic-modernization/
 │   ├── vets-service/             :8083 vets, specialties
 │   └── visits-service/           :8082 visits
 ├── api-gateway/                  :8080 routing + Swagger + composición
+├── tests/parity-tests/           guardián regla → test (suite estática)
 ├── docs/                         ANALYSIS, ARCHITECTURE, API, TESTING, MIGRATION, AI_USAGE, http/
+├── Dockerfile                    imagen multi-stage reutilizable (ARG MODULE/PORT)
+├── docker-compose.yml            los cuatro servicios con healthchecks
 ├── legacy/README.md              dónde vive el monolito original (tag legacy-java21)
-└── docker-compose.yml            (Fase 7)
+└── .github/workflows/ci.yml      build + tests + paridad con JDK 21
 ```
 
 Dentro de cada servicio:
@@ -168,17 +171,36 @@ Prefijo a través del gateway: `/api/<servicio>`. Detalle completo, ejemplos y c
 | gateway | `GET /api/owners/{ownerId}/details` | 200, 404, 503 |
 | gateway | `/api/system/boom` | 500 (demostración de manejo de errores) |
 
-## 5. Observabilidad y operación
+**Reescritura de rutas**: `customers` y `visits` se publican como `/api/<servicio>/<recurso>` y el
+gateway elimina los dos primeros segmentos (`/api/customers/owners/1` → `/owners/1`). `vets` ya
+publica sus recursos bajo `/vets`, así que solo se elimina `/api` (`/api/vets/all` → `/vets/all`).
+
+## 5. Contenedores, CI y calidad
+
+- **Imagen**: `Dockerfile` multi-stage. La etapa de build ejecuta
+  `./mvnw -pl ${MODULE} -am -DskipTests package` y la de runtime usa `eclipse-temurin:21-jre` con
+  `curl` para los healthchecks. Una sola imagen parametrizada evita cuatro Dockerfiles duplicados.
+- **Compose**: cuatro servicios, `depends_on` por `condition: service_healthy` y las URLs inyectadas
+  por entorno (`CUSTOMERS_SERVICE_URL`, `VETS_SERVICE_URL`, `VISITS_SERVICE_URL`).
+- **CI** (`.github/workflows/ci.yml`): JDK 21 (temurin), `./mvnw -B verify` en `push` y
+  `pull_request` a `main`/`develop`, y publicación de los informes JaCoCo como artefacto. El
+  `verify` incluye la suite de paridad, así que una regla sin test rompe la CI.
+- **Calidad**: `spring-javaformat` en `validate`, `maven-enforcer` exigiendo JDK 21, JaCoCo por
+  módulo y `tests/parity-tests` como guardián de trazabilidad.
+- **Workflows retirados** (documentados en `MIGRATION.md`): Gradle, despliegue a k8s y el check DCO.
+
+## 6. Observabilidad y operación
 
 - Actuator en todos los módulos: `/actuator/health`, `/actuator/info`, `/actuator/metrics`.
 - `build-info` y `git.properties` no se generan en la versión multi-módulo (simplificación).
 - Hilos virtuales activos (`spring.threads.virtual.enabled=true`) en los tres servicios.
 - Logs por consola con nivel INFO; `logging.level.org.springframework=INFO` heredado del perfil.
 
-## 6. Fuera de alcance (declarado)
+## 7. Fuera de alcance (declarado)
 
 - **Frontend**: no se porta Thymeleaf. La UI de inspección es Swagger UI y los `.http`.
 - **Seguridad**: sin autenticación ni autorización (no está en el enunciado).
 - **Mensajería/Kafka, Eureka, Config Server**: innecesarios para el alcance y coste de la prueba.
 - **PostgreSQL real**: esquemas preparados y documentados, sin *pipeline* de CI con Testcontainers
   (no hay Docker en la máquina de desarrollo).
+
