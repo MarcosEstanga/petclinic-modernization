@@ -40,17 +40,17 @@
 | BR-PET-09 | Pets de un owner ordenados por nombre; visitas ordenadas por fecha | `@OrderBy` | `CustomersRepositoryTests#BR_PET_09_petsOfAnOwnerAreOrderedByName` (visitas en `visits-service`) |
 | BR-PET-10 | **(nueva)** El `type` debe existir; un tipo desconocido es `400`, nunca un tipo inventado | `PetTypeFormatter` | `PetServiceTests#BR_PET_10_unknownPetTypeIsAClientError` |
 | BR-PET-11 | **(nueva)** `Owner.addPet` del original ignoraba duplicados en memoria | `Owner.addPet` | **No se conserva**: el agregado es bidireccional y los duplicados los rechaza el servicio + la constraint (BR-PET-04/06). Ver `MIGRATION.md` §4 |
-| BR-PET-12 | **(nueva)** Un `petId` que no pertenece al owner en el formulario de visita → `404` | `VisitController.loadPetWithVisit` | Se cubre en `visits-service` (Fase 5) |
+| BR-PET-12 | **(nueva)** Un `petId` que no pertenece al owner en el formulario de visita → `404` | `VisitController.loadPetWithVisit` | `VisitServiceTests#BR_VIS_03_and_BR_VIS_05_*`, `CustomersGatewayTests#BR_VIS_03_a404FromCustomersIsA404` |
 
 ## Visits — `owner/Visit.java`, `VisitController.java`
 
 | ID | Regla | Origen | Test |
 |---|---|---|---|
-| BR-VIS-01 | `description` obligatoria (`@NotBlank`), máx. 255 | `Visit` | Fase 5 |
-| BR-VIS-02 | `date` debe ser **estrictamente futura** (`> hoy`; mínima del formulario = mañana) | `VisitController` | Fase 5 |
-| BR-VIS-03 | Owner y pet deben existir y el pet pertenecer al owner; si no → **404** | `loadPetWithVisit` | Fase 5 |
-| BR-VIS-04 | Fecha por defecto de una visita nueva = mañana | `Visit` (constructor) | Fase 5 |
-| BR-VIS-05 | `Owner.addVisit(petId, visit)` valida pet y visita no nulos y que el pet exista | `Owner.addVisit` | Fase 5 |
+| BR-VIS-01 | `description` obligatoria (`@NotBlank`), máx. 255 | `Visit` | `VisitControllerTests#BR_VIS_01_descriptionIsMandatoryAndLimitedTo255Characters`, `VisitRepositoryTests` (columna NOT NULL) |
+| BR-VIS-02 | `date` debe ser **estrictamente futura** (`> hoy`; mínima del formulario = mañana) | `VisitController` | `VisitServiceTests#BR_VIS_02_aDateFromTodayIsRejected`, `#BR_VIS_02_aDateInThePastIsRejected`, `VisitControllerTests#BR_VIS_02_*`, `VisitsServiceIntegrationTests#aPastDateIsRejected` |
+| BR-VIS-03 | Owner y pet deben existir y el pet pertenecer al owner; si no → **404**; dependencia caída → **503** | `loadPetWithVisit` | `VisitServiceTests#BR_VIS_03_and_BR_VIS_05_*`, `CustomersGatewayTests#BR_VIS_03_*`, `VisitControllerTests#BR_VIS_03_*`, `VisitsServiceIntegrationTests#BR_VIS_03_*` |
+| BR-VIS-04 | Fecha por defecto de una visita nueva = mañana | `Visit` (constructor) | `VisitServiceTests#BR_VIS_04_aNewVisitDefaultsToTomorrow` |
+| BR-VIS-05 | `Owner.addVisit(petId, visit)` validaba pet y visita no nulos y que el pet existiera (no dejar visitas huérfanas) | `Owner.addVisit` | `VisitServiceTests#BR_VIS_03_and_BR_VIS_05_nothingIsStoredWhenThePetDoesNotBelongToTheOwner` (se valida antes de persistir) |
 
 ## Vets — `vet/*`
 
