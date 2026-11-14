@@ -56,11 +56,11 @@
 
 | ID | Regla | Origen | Test |
 |---|---|---|---|
-| BR-VET-01 | Listado paginado de 5; página fuera de rango → página 1 | `VetController.showVetList` | Fase 4 |
-| BR-VET-02 | Listado completo en `/vets` envuelto en objeto `Vets` (`vetList`) | `VetController.showResourcesVetList` | Fase 4 |
+| BR-VET-01 | Listado paginado de 5; página fuera de rango → página 1 | `VetController.showVetList` | `VetServiceTests#BR_VET_01_aPageBeyondTheEndIsServedAsFirstPage`, `#BR_VET_01_pageBelowOneIsClampedAndSortedStably`, `VetControllerTests#BR_VET_01_paginatedListIncludesMetadata` |
+| BR-VET-02 | Listado completo en `/vets/all` envuelto en objeto `Vets` (`vetList`) | `VetController.showResourcesVetList` | `VetServiceTests#BR_VET_02_fullListIsWrappedInAVetsObject`, `VetControllerTests#BR_VET_02_fullListIsWrappedInVetList`, `VetsServiceIntegrationTests#allVetsAreReturnedInTheLegacyShape` |
 | BR-VET-02b | **(corregida)** El original **solo devuelve JSON**: no hay `jackson-dataformat-xml` ni implementación JAXB, así que las anotaciones `@XmlRootElement/@XmlElement` no tienen efecto; el XML documentado **no funciona**. Se eliminó el código muerto (Fase 1); XML queda opcional (recorte #1) | `pom.xml`, `Vets`, `Vet` | — |
-| BR-VET-03 | Especialidades ordenadas por nombre y `nrOfSpecialties` = tamaño | `Vet` | Fase 4 |
-| BR-VET-04 | Listado de vets cacheado en la caché `vets` | `CacheConfiguration`, `VetRepository` | Fase 4 |
+| BR-VET-03 | Especialidades ordenadas por nombre y `nrOfSpecialties` = tamaño | `Vet` | `VetServiceTests#BR_VET_03_specialtiesAreSortedByNameAndCounted`, `VetsRepositoryTests#BR_VET_03_specialtiesComeOrderedAndCounted` |
+| BR-VET-04 | Listado de vets cacheado en la caché `vets` | `CacheConfiguration`, `VetRepository` | `VetCachingTests#BR_VET_04_theVetListIsServedFromTheCacheOnTheSecondCall` |
 
 ## Sistema
 

@@ -118,3 +118,29 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
   - La IA olvidó que `spring-javaformat` corre en `validate`: el primer `verify` falló por formato y
     se resolvió ejecutando `spring-javaformat:apply` antes de compilar.
 
+### 2026-11-14 — Fase 4: vets-service
+
+- **Herramienta / modelo:** OpenCode — DeepSeek V4.1 Flash.
+- **Objetivo:** servicio de solo lectura para vets y especialidades, paginado, cacheado y con el
+  contrato `vetList` del original.
+- **Prompt (resumen):** «Implementa la Fase 4: vets + specialties, caché Caffeine y tests
+  equivalentes a los de customers.»
+- **Resultado de la IA:** dominio (`Vet`, `Specialty`, `Person`, `NamedEntity`, `BaseEntity`),
+  `VetService` con `@Cacheable("vets")`, `VetController` (`/vets`, `/vets/all`), DTOs con `@Schema`,
+  `schema.sql`/`data.sql` de vets, 16 tests (unidad, `@WebMvcTest`, `@DataJpaTest`, caché e
+  integración).
+- **Validación humana/automática:**
+  - `Tests run: 16, Failures: 0, Errors: 0` y `BUILD SUCCESS`.
+  - El test de caché es real: se sustituye el repositorio por un mock y se comprueba con
+    `verify(times(1))` que la segunda petición HTTP no toca el repositorio.
+  - El test de integración verifica el orden de especialidades y el `nrOfSpecialties` de Douglas
+    contra los datos semilla.
+- **Correcciones aplicadas:**
+  - Primer intento del test de caché: **falló** (`TooManyActualInvocations`) porque `@Cacheable`
+    no hace nada sin `@EnableCaching`; Boot 4 autoconfigura el `CacheManager` pero no el proxy.
+    Se añadió `CacheConfiguration` con `@EnableCaching` y el warning de Micrometer
+    («cache is not recording statistics») se corrigió añadiendo `recordStats` al *spec* de Caffeine.
+  - La IA duplicó en vets las clases `BaseEntity`/`Person` del servicio de customers: es
+    **intencionado** (ADR-003, sin entidades compartidas), y quedó anotado aquí para que no se
+    confunda con un descuido.
+
