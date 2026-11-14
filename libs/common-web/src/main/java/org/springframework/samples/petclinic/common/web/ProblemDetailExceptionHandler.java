@@ -53,12 +53,17 @@ public class ProblemDetailExceptionHandler {
 
 	@ExceptionHandler(ConflictException.class)
 	ProblemDetail handleConflict(ConflictException ex, HttpServletRequest request) {
-		return problem(HttpStatus.CONFLICT, "conflict", "Conflict", ex.getMessage(), request);
+		ProblemDetail problem = problem(HttpStatus.CONFLICT, "conflict", "Conflict", ex.getMessage(), request);
+		addFieldError(problem, ex.getField(), ex.getMessage());
+		return problem;
 	}
 
 	@ExceptionHandler(BadRequestException.class)
 	ProblemDetail handleBadRequest(BadRequestException ex, HttpServletRequest request) {
-		return problem(HttpStatus.BAD_REQUEST, "bad-request", "Invalid request", ex.getMessage(), request);
+		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "bad-request", "Invalid request", ex.getMessage(),
+				request);
+		addFieldError(problem, ex.getField(), ex.getMessage());
+		return problem;
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -100,6 +105,12 @@ public class ProblemDetailExceptionHandler {
 		return fieldErrors.stream()
 			.map(error -> new ApiValidationError(error.getField(), error.getDefaultMessage()))
 			.toList();
+	}
+
+	private void addFieldError(ProblemDetail problem, String field, String message) {
+		if (field != null) {
+			problem.setProperty("errors", List.of(new ApiValidationError(field, message)));
+		}
 	}
 
 	/**

@@ -16,14 +16,28 @@
 package org.springframework.samples.petclinic.common.web;
 
 /**
- * Signals a client error that is not a Bean Validation failure (for example an
- * unsupported pagination size). Mapped to HTTP 400 by
+ * Signals a client error that is not a Bean Validation failure (for example a pet type
+ * that does not exist, or a birth date in the future). Mapped to HTTP 400 by
  * {@link ProblemDetailExceptionHandler}.
+ * <p>
+ * When a field is given, the response also carries {@code errors: [{ field, message }]}
+ * so clients can highlight the offending input, exactly like validation errors.
  */
 public class BadRequestException extends RuntimeException {
 
+	private final String field;
+
 	public BadRequestException(String message) {
+		this(null, message);
+	}
+
+	public BadRequestException(String field, String message) {
 		super(message);
+		this.field = field;
+	}
+
+	public String getField() {
+		return this.field;
 	}
 
 }
