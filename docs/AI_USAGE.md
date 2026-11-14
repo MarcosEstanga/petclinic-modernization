@@ -173,3 +173,34 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
   - Se añadió un handler de 503 que no estaba previsto en el plan de la fase, porque sin él la
     caída de customers acababa en 500 (contra ADR-005).
 
+### 2026-11-14 — Fase 6: api-gateway
+
+- **Herramienta / modelo:** OpenCode — DeepSeek V4.1 Flash.
+- **Objetivo:** exponer los tres servicios bajo `/api/*`, agregar Swagger UI y componer el detalle
+  de owner (owner + pets + visitas).
+- **Prompt (resumen):** «Implementa la Fase 6: rutas con Spring Cloud Gateway MVC, Swagger
+  agregado, endpoint de composición y manejo de fallos.»
+- **Resultado de la IA:**
+  - `GatewayRoutesConfiguration` con la Java Routes API (`RouterFunction`) y `stripPrefix`/`uri`.
+  - `OwnerDetailsComposer` + `OwnerDetailsController` (`/api/owners/{id}/details`) con clientes
+    `@HttpExchange` (`CustomersClient`, `VisitsClient`) y timeouts 2 s/5 s.
+  - `SystemController` (`/api/system/boom`) y `springdoc` con 4 pestañas (customers, vets, visits y
+    gateway) apuntando a las specs proxied.
+  - 13 tests: unitarios del compositor e integración con un **stub HTTP del JDK** que hace de
+    customers/vets/visits (sin Docker ni procesos extra).
+- **Validación humana/automática:**
+  - `Tests run: 13, Failures: 0, Errors: 0` y `BUILD SUCCESS`.
+  - El test de integración prueba de verdad el proxy: pide `/api/customers/owners/6` y comprueba que
+    el `stripPrefix` llega al stub como `/owners/6`; también verifica la composición anidando
+    visitas por mascota.
+  - `/api/owners/999/details` devuelve 404 con `ProblemDetail` (traducido del 404 remoto).
+- **Correcciones aplicadas:**
+  - Primer diseño: `stripPrefix(2)` para las tres rutas. El test de vets falló con
+    `404 No context found for request` porque `/api/vets/all` se convertía en `/all`. Se corrigió a
+    `stripPrefix(1)` para vets (sus recursos ya viven bajo `/vets`) y se documentó la asimetría.
+  - Se añadieron propiedades `spring.cloud.gateway.httpclient.*` que **solo existen en la variante
+    WebFlux**; se eliminaron al comprobar que este gateway es MVC, para no dejar configuración
+    muerta.
+  - Un cast a `Map<?, ?>` en un test no compilaba (`capture#1 of ?`); se tipó como
+    `Map<String, Object>`.
+

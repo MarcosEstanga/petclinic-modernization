@@ -66,7 +66,7 @@
 
 | ID | Regla | Origen | Test |
 |---|---|---|---|
-| BR-SYS-01 | Endpoint que provoca un error intencionado (HTTP 500) para demostrar el manejo de errores | `CrashController` | Fase 6 (`/api/system/boom`) |
+| BR-SYS-01 | Endpoint que provoca un error intencionado (HTTP 500) para demostrar el manejo de errores | `CrashController` | `GatewayIntegrationTests#BR_SYS_01_boomEndpointFailsOnPurpose` (`/api/system/boom`) |
 | BR-SYS-02 | i18n de mensajes de validación (incl. `telephone.invalid`) | `resources/messages` | `OwnerControllerTests#BR_OWN_05_*` (mensaje traducido desde `ValidationMessages.properties`) |
 | BR-SYS-03 | Datos semilla idénticos al original: 10 owners, 13 pets, 6 types, 6 vets, 3 specialties, 4 visits | `db/h2/data.sql` | `CustomersRepositoryTests#BR_SYS_03_seedDataIsTheLegacyOne` (owners/pets/types) + Fase 4 (vets) + Fase 5 (visits) |
 | BR-SYS-04 | Perfiles MySQL/PostgreSQL soportados | `application-*.properties`, `db/*/schema.sql` | Fase 8 (documentado; H2 por defecto) |
