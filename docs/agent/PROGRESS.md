@@ -11,7 +11,7 @@
 | 6 api-gateway | feature/api-gateway | ✅ hecho | `.\mvnw.cmd -B -pl api-gateway -am test` → `Tests run: 13, Failures: 0`, `BUILD SUCCESS` | Rutas `/api/customers`, `/api/vets`, `/api/visits` (Gateway MVC 5.0.4), composición `/api/owners/{id}/details`, Swagger agregado y `/api/system/boom` |
 | 7 Paridad, calidad, Docker, CI | feature/parity-tests-and-docker | ✅ hecho | `.\mvnw.cmd -B verify` → **117 tests, 0 fallos**, 7 módulos `SUCCESS`; `ParityTraceabilityTests` 2/2 | JaCoCo: customers 93,3 %, vets 96,6 %, visits 96,6 %, gateway 97,3 % de líneas. `Dockerfile` + `docker-compose.yml` + `ci.yml` (JDK 21) |
 | 8 Documentación | feature/documentation | ✅ hecho | `./mvnw -B verify` sigue verde tras los cambios de docs (ver Fase 7) | README reescrito, ARCHITECTURE con ADRs y contenedores, API.md, TESTING.md, MIGRATION.md, AI_USAGE.md y `docs/http/*.http` |
-| 9 Release y publicación | release/1.0.0 | ✅ release local (publicación pendiente) | `./mvnw -B verify` → 117 tests, `BUILD SUCCESS` con versión `1.0.0`; `scripts/smoke-test.ps1` → **SMOKE TEST OK** desde clon limpio | Tag `v1.0.0`; merge `--no-ff` a `main` y `develop`. No se publica en GitHub por decisión del usuario |
+| 9 Release y publicación | release/1.0.0 | ✅ hecho | `./mvnw -B verify` → 117 tests, `BUILD SUCCESS` con versión `1.0.0`; `scripts/smoke-test.ps1` → **SMOKE TEST OK** desde clon limpio; CI de GitHub en `main` → **success** (run 43618514746) | Publicado en https://github.com/MarcosEstanga/petclinic-modernization (12 ramas + tags `v1.0.0` y `legacy-java21`) |
 
 ## Línea base del monolito original
 
@@ -73,11 +73,13 @@ Script reproducible: [`scripts/smoke-test.ps1`](../../scripts/smoke-test.ps1)
 
 ## Publicación
 
-- **Repositorio público**: https://github.com/MarcosEstanga/petclinic-modernization
+- **Repositorio público**: https://github.com/MarcosEstanga/petclinic-modernization (visibilidad
+  `PUBLIC`, rama por defecto `main`).
 - Creado con `gh repo create MarcosEstanga/petclinic-modernization --public --source . --remote origin`
   y publicado con `git push -u origin --all` + `git push origin --tags`.
-- Ramas publicadas: `main`, `develop`, las 8 `feature/*` y `release/1.0.0`; tags `v1.0.0` y
-  `legacy-java21`.
+- Ramas publicadas: `main`, `develop`, las 8 `feature/*` y `release/1.0.0`; tags `v1.0.0`,
+  `legacy-java21` (y `1.5.x` heredado del upstream).
+- **CI en verde** en `main`: workflow `CI` (run `43618514746`), `./mvnw -B verify` con JDK 21.
 
 Para republicar en otra cuenta:
 
