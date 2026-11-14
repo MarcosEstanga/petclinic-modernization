@@ -66,6 +66,12 @@ public class ProblemDetailExceptionHandler {
 		return problem;
 	}
 
+	@ExceptionHandler(ServiceUnavailableException.class)
+	ProblemDetail handleServiceUnavailable(ServiceUnavailableException ex, HttpServletRequest request) {
+		return problem(HttpStatus.SERVICE_UNAVAILABLE, "service-unavailable", "Service unavailable", ex.getMessage(),
+				request);
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	ProblemDetail handleInvalidBody(MethodArgumentNotValidException ex, HttpServletRequest request) {
 		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "validation-failed", "Validation failed",

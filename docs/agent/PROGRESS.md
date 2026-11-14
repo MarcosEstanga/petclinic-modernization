@@ -7,7 +7,7 @@
 | 2 Esqueleto multi-módulo | feature/multimodule-skeleton | ✅ hecho | `.\mvnw.cmd -B verify` → 6 módulos `SUCCESS`, 4 tests de contexto, `BUILD SUCCESS` (53 s) | Parent `packaging=pom`, `libs/common-web`, 3 servicios + gateway; monolito retirado a tag `legacy-java21` |
 | 3 customers-service | feature/customers-service | ✅ hecho | `.\mvnw.cmd -B verify` → `Tests run: 55` en el módulo (58 en total), `BUILD SUCCESS` | Owners/pets/petTypes REST con ProblemDetail, OpenAPI, 409 en duplicados, paginación ADR-004 y tests de paridad BR-OWN/BR-PET |
 | 4 vets-service | feature/vets-service | ✅ hecho | `.\mvnw.cmd -B -pl services/vets-service -am test` → `Tests run: 16, Failures: 0`, `BUILD SUCCESS` | REST paginado + `/vets/all` con contrato `vetList`, caché Caffeine (`BR-VET-04` verificada con Mockito), seeds y OpenAPI |
-| 5 visits-service | feature/visits-service | pendiente | | |
+| 5 visits-service | feature/visits-service | ✅ hecho | `.\mvnw.cmd -B -pl services/visits-service -am test` → `Tests run: 29, Failures: 0`, `BUILD SUCCESS` | Cliente `@HttpExchange` + `RestClient` con timeouts, 404/503 remotos, fecha futura y bulk `/pets/visits` |
 | 6 api-gateway | feature/api-gateway | pendiente | | |
 | 7 Paridad, calidad, Docker, CI | feature/parity-tests-and-docker | pendiente | | |
 | 8 Documentación | feature/documentation | pendiente | | |

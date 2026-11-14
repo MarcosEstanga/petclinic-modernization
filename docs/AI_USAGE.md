@@ -144,3 +144,32 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
     **intencionado** (ADR-003, sin entidades compartidas), y quedó anotado aquí para que no se
     confunda con un descuido.
 
+### 2026-11-14 — Fase 5: visits-service
+
+- **Herramienta / modelo:** OpenCode — DeepSeek V4.1 Flash.
+- **Objetivo:** visitas por owner/pet, validación remota del pet contra customers-service y manejo
+  de errores 404/503.
+- **Prompt (resumen):** «Implementa la Fase 5: visitas, cliente `RestClient` con `@HttpExchange`,
+  timeouts, 404→404 y caída→503, y tests del cliente.»
+- **Resultado de la IA:**
+  - `CustomersClient` (`@HttpExchange`) + `CustomersClientConfiguration` (timeouts 2 s/5 s) y
+    `CustomersGateway` que traduce 404→404, 5xx/IO→503.
+  - `VisitService`/`VisitController`/`PetVisitsController` (`/pets/visits?petId=7,8`), DTOs,
+    `Visit` con fecha por defecto mañana, `schema.sql`/`data.sql` (4 visitas semilla).
+  - `ServiceUnavailableException` añadida a `common-web` con su handler 503.
+  - 29 tests, con `MockRestServiceServer` para el cliente remoto (sin Docker ni puertos).
+- **Validación humana/automática:**
+  - `Tests run: 29, Failures: 0, Errors: 0` y `BUILD SUCCESS`.
+  - El test del cliente cubre 200, 404, 500 y `SocketTimeoutException` sobre la interfaz
+    `@HttpExchange`, que es exactamente el contrato que usa el servicio.
+  - El test de integración sustituye `CustomersGateway` por un mock, de modo que el flujo HTTP+JPA
+    se prueba sin depender de que customers esté arrancado.
+- **Correcciones aplicadas:**
+  - Primer borrador del test de integración asumía un número exacto de visitas tras crear una; como
+    los tests comparten la BD, era frágil. Se cambió a `hasSizeGreaterThanOrEqualTo` y a comprobar
+    que la visita creada es la última por fecha.
+  - La IA usó `com.fasterxml.jackson.databind.JsonNode` con `RestClient` (repetía el error de la
+    Fase 3); en esta fase se usaron `Map`/`ParameterizedTypeReference` desde el principio.
+  - Se añadió un handler de 503 que no estaba previsto en el plan de la fase, porque sin él la
+    caída de customers acababa en 500 (contra ADR-005).
+
