@@ -11,7 +11,7 @@
 | 6 api-gateway | feature/api-gateway | ✅ hecho | `.\mvnw.cmd -B -pl api-gateway -am test` → `Tests run: 13, Failures: 0`, `BUILD SUCCESS` | Rutas `/api/customers`, `/api/vets`, `/api/visits` (Gateway MVC 5.0.4), composición `/api/owners/{id}/details`, Swagger agregado y `/api/system/boom` |
 | 7 Paridad, calidad, Docker, CI | feature/parity-tests-and-docker | ✅ hecho | `.\mvnw.cmd -B verify` → **117 tests, 0 fallos**, 7 módulos `SUCCESS`; `ParityTraceabilityTests` 2/2 | JaCoCo: customers 93,3 %, vets 96,6 %, visits 96,6 %, gateway 97,3 % de líneas. `Dockerfile` + `docker-compose.yml` + `ci.yml` (JDK 21) |
 | 8 Documentación | feature/documentation | ✅ hecho | `./mvnw -B verify` sigue verde tras los cambios de docs (ver Fase 7) | README reescrito, ARCHITECTURE con ADRs y contenedores, API.md, TESTING.md, MIGRATION.md, AI_USAGE.md y `docs/http/*.http` |
-| 9 Release y publicación | release/1.0.0 | pendiente | | |
+| 9 Release y publicación | release/1.0.0 | ✅ release local (publicación pendiente) | `./mvnw -B verify` → 117 tests, `BUILD SUCCESS` con versión `1.0.0`; `scripts/smoke-test.ps1` → **SMOKE TEST OK** desde clon limpio | Tag `v1.0.0`; merge `--no-ff` a `main` y `develop`. No se publica en GitHub por decisión del usuario |
 
 ## Línea base del monolito original
 
@@ -40,4 +40,55 @@
 
 ## Bloqueos / decisiones pendientes del usuario
 
-- Fase 9: crear repo público + `git push` requiere autenticación previa de `gh`.
+- **Publicación en GitHub**: el usuario decidió no publicar por ahora (2026-11-14). Todo está listo
+  para `gh repo create <usuario>/petclinic-modernization --public --source . --remote origin` y el
+  push de ramas/tags (ver §«Publicación»).
+
+## Prueba de humo desde clon limpio (Fase 9)
+
+```
+== 1/5 Cloning the repository into C:\Users\marci\AppData\Local\Temp\petclinic-smoke-20261114122816 ==
+== 2/5 Building (tests already ran in verify) ==
+== 3/5 Starting the services ==
+   customers -> pid 29904 (:8081)
+   vets -> pid 30116 (:8083)
+   visits -> pid 23052 (:8082)
+   gateway -> pid 12812 (:8080)
+== 4/5 Waiting for /actuator/health ==
+   customers UP
+   vets UP
+   visits UP
+   gateway UP
+== 5/5 End-to-end calls ==
+   owners?lastName=fran -> Franklin (total 1)
+   vets/all -> 6 vets
+   owners/6/details -> Coleman, 2 pets, 4 visits
+   POST visit -> id 5 for 2026-11-24
+   swagger-ui -> HTTP 200 (following redirects)
+
+SMOKE TEST OK
+```
+
+Script reproducible: [`scripts/smoke-test.ps1`](../../scripts/smoke-test.ps1)
+(`powershell -File scripts/smoke-test.ps1 -JavaHome <JDK21>`).
+
+## Publicación (pendiente de confirmación)
+
+```bash
+# 1. Autenticarse una sola vez
+gh auth login
+
+# 2. Crear el repositorio público y añadirlo como origin
+gh repo create <usuario>/petclinic-modernization --public --source . --remote origin
+
+# 3. Subir todo el historial, todas las ramas y los tags
+git push -u origin --all
+git push origin --tags
+
+# 4. Comprobar la CI y el tag
+gh run list --limit 5
+gh run watch
+gh release create v1.0.0 --title "v1.0.0" --notes-file CHANGELOG.md
+```
+
+Después, actualizar el badge del README y el enlace `[1.0.0]` del `CHANGELOG.md` con la URL real.

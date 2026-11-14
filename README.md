@@ -1,13 +1,15 @@
 # PetClinic Modernization
 
-[![CI](https://github.com/OWNER/petclinic-modernization/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/petclinic-modernization/actions/workflows/ci.yml)
-
 Reescritura del monolito [Spring PetClinic](https://github.com/spring-projects/spring-petclinic)
 como **microservicios Spring Boot 4.1 en Java 21**, con **REST documentado con OpenAPI**, tests de
 paridad que preservan cada regla del original y GitFlow con historial limpio.
 
 > El monolito original está conservado íntegro en el historial y en el tag **`legacy-java21`**
 > (ver [`legacy/README.md`](legacy/README.md)).
+
+> **Estado de publicación**: el repositorio está listo para publicarse como
+> `<usuario>/petclinic-modernization`; la CI (`.github/workflows/ci.yml`) se ejecutará en el primer
+> push. Los pasos exactos están en [`docs/agent/PROGRESS.md`](docs/agent/PROGRESS.md) §«Publicación».
 
 ## Arquitectura
 
