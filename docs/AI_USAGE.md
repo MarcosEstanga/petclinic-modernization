@@ -258,3 +258,36 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
   - Se corrigió la numeración de secciones de `ARCHITECTURE.md` al insertar «Contenedores, CI y
     calidad» (quedaban 4, 7, 8, 6).
 
+## Cómo se validó lo generado por IA
+
+| Técnica | Dónde se aplica |
+|---|---|
+| **Ejecutar, no creer** | Cada fase termina con `./mvnw verify` real; la salida está pegada en `docs/agent/PROGRESS.md`. |
+| **Tests que fallan primero** | El guardián `ParityTraceabilityTests` se escribió antes de que existieran los tests `BR-*`; falló señalando 3 reglas y se corrigió. El test de caché falló por falta de `@EnableCaching`. |
+| **Comparar con el original** | Las reglas se validaron leyendo el código del monolito (Fase 0) y cada test cita la regla `BR-*` que protege. |
+| **Revisión de contrato** | Los ejemplos de `docs/API.md` se contrastaron con las respuestas reales de los tests de integración. |
+| **Verificación de versiones** | Spring Cloud, Gateway y springdoc se comprobaron en Maven Central y en la tabla oficial antes de fijarlos. |
+| **Revisión de código** | `spring-javaformat` en `validate` obliga a un estilo uniforme; los cambios se revisaron con `git diff` antes de cada commit. |
+| **Prueba de humo** | `scripts/smoke-test.ps1` clona el repo, compila, arranca los cuatro servicios y ejecuta llamadas de extremo a extremo. |
+
+## Errores de la IA detectados y corregidos (resumen)
+
+| # | Error | Cómo se detectó | Corrección |
+|---|---|---|---|
+| 1 | El inventario de reglas decía que `/vets` devuelve XML | Lectura de `pom.xml` (solo `jakarta.xml.bind-api`) | BR-VET-02b + eliminación del código muerto |
+| 2 | `JAVA_HOME` apuntaba a un JDK inexistente | `./mvnw test` falló | `JAVA_HOME` por sesión + JDK 21 instalado |
+| 3 | `java -version` seguía mostrando 17 | Log de Maven frente al `java` del `PATH` | Se validó la versión real en el log del build |
+| 4 | Se asumió que haría falta el plan B del gateway | Consulta a la tabla de compatibilidad | Spring Cloud 2025.1.4 sí soporta Boot 4.1 (ADR-002) |
+| 5 | `relativePath` del POM de `common-web` incorrecto | `Non-resolvable parent POM` | `../../pom.xml` |
+| 6 | Olvido de `spring-javaformat:apply` | Fallo en `validate` | Se añadió al flujo de cada fase |
+| 7 | `Location` comparado como ruta relativa | Test rojo | Se compara `getPath()` con el id devuelto |
+| 8 | `JsonNode` con `RestClient` (Jackson 3 en Boot 4) | `HttpMessageConversionException` | Tests con `Map`/`ParameterizedTypeReference` |
+| 9 | Stub de Mockito con argumentos invertidos | `UnnecessaryStubbingException` | Argumentos corregidos (BR-PET-07) |
+| 10 | `@Cacheable` sin `@EnableCaching` | `TooManyActualInvocations` | `CacheConfiguration` con `@EnableCaching` |
+| 11 | Test de integración con conteo exacto y BD compartida | Fragilidad potencial | `hasSizeGreaterThanOrEqualTo` |
+| 12 | `stripPrefix(2)` también para vets | `404 No context found for request` | `stripPrefix(1)` para vets + documentación |
+| 13 | Propiedades `spring.cloud.gateway.httpclient.*` en gateway MVC | Revisión de la documentación | Eliminadas (solo aplican a WebFlux) |
+| 14 | `commit` fallido por comillas en PowerShell | Historial sin commit y rama mal creada | Se rehízo el commit y se recolocó la rama |
+| 15 | Numeración de secciones de ARCHITECTURE (4, 7, 8, 6) | Revisión del documento | Renumeradas |
+| 16 | Aserción con el texto del mensaje equivocado (BR-PET-12) | Test rojo | Mensaje esperado corregido |
+| 17 | `Add-Content` sin `-Encoding utf8` corrompió acentos | Inspección del archivo | Se reescribió el documento en UTF-8 |
