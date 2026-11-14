@@ -53,3 +53,33 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
     afecta a la paginación REST; se añadió BR-OWN-14.
   - Se detectó que `page < 1` rompía `PageRequest.of` y que los commits `0d064b0`/`b33136f`
     saturan a 1; el inventario lo describía como «overflow», se reescribió con la causa real.
+
+### 2026-11-14 — Fase 1: migración a Java 21
+
+- **Herramienta / modelo:** OpenCode — DeepSeek V4.1 Flash.
+- **Objetivo:** subir el monolito a Java 21 sin romper nada, aplicar features de 21 donde aporten
+  y verificar las versiones de Spring Cloud / springdoc.
+- **Prompt (resumen):** «Sigue con la Fase 1 del `PLAN.md`: Java 21, features, verificación de
+  versiones y `./mvnw verify` verde.»
+- **Resultado de la IA:**
+  - `pom.xml`: `java.version=21`, checkstyle 12.3.1 → 13.11.0 (el pin existía solo por el JDK).
+  - `build.gradle`: toolchain 17 → 21; workflows de CI (Maven y Gradle) a JDK 21 + `temurin`.
+  - `Vets` convertido en `record`; `getFirst()` en tests; `spring.threads.virtual.enabled=true`.
+  - Eliminadas `jakarta.xml.bind-api` y las anotaciones JAXB (código muerto, ver BR-VET-02b).
+  - `docs/MIGRATION.md` con tabla de versiones + fuente consultada y ADRs resumidos.
+- **Validación humana/automática:**
+  - `.\mvnw.cmd -B verify` con **JDK 21.0.13**: `Tests run: 79, Failures: 0, Errors: 0, Skipped: 2`,
+    `BUILD SUCCESS`, `0 Checkstyle violations`, JaCoCo generado.
+  - Los hilos virtuales se confirman en el log de tests (`java.base/java.lang.VirtualThread.run`).
+  - Versiones comprobadas contra Maven Central y la tabla oficial de Spring Cloud (ver §«Fuentes»).
+- **Correcciones aplicadas:**
+  - `winget install EclipseAdoptium.Temurin.21.JDK` quedó colgado esperando UAC (>10 min) y **no
+    instaló nada**; se cambió a descarga del zip oficial de Adoptium (sin admin). La IA lo detectó
+    porque `winget list --id EclipseAdoptium.Temurin.21.JDK` seguía devolviendo «not installed».
+  - Primer `java -version` tras configurar `JAVA_HOME` seguía mostrando 17: era el `java` del
+    `PATH`, no el del build. Se documentó y se comprobó la versión real en el log de Maven
+    (`Starting ClinicServiceTests using Java 21.0.13`).
+  - La IA asumió inicialmente que haría falta el **plan B** del gateway (sin Spring Cloud); la
+    consulta a la tabla de compatibilidad mostró que **2025.1.4 soporta Boot 4.1** y que existe
+    variante **MVC** del gateway → se corrigió la decisión (ADR-002) antes de implementarla.
+
