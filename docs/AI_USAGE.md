@@ -83,3 +83,38 @@ La configuración vive en `opencode.json` (commiteado) y las instrucciones en `A
     consulta a la tabla de compatibilidad mostró que **2025.1.4 soporta Boot 4.1** y que existe
     variante **MVC** del gateway → se corrigió la decisión (ADR-002) antes de implementarla.
 
+### 2026-11-14 — Fase 3: customers-service
+
+- **Herramienta / modelo:** OpenCode — DeepSeek V4.1 Flash.
+- **Objetivo:** implementar owners, pets y pet types como servicio REST con DTOs, validación,
+  `ProblemDetail`, OpenAPI y tests de paridad.
+- **Prompt (resumen):** «Implementa la Fase 3 del PLAN: entidades, repositorios, casos de uso,
+  controladores, OpenAPI y tests (unidad + `@WebMvcTest` + `@DataJpaTest` + `@SpringBootTest`).»
+- **Resultado de la IA:**
+  - 30 archivos nuevos: dominio (`Owner`, `Pet`, `PetType`, `Person`, `NamedEntity`, `BaseEntity`),
+    repositorios, `OwnerService`/`PetService`/`PetTypeService`, DTOs `record` con `@Schema`,
+    mappers, 3 controladores con `@Operation`, config OpenAPI, `schema.sql`/`data.sql` y
+    `ValidationMessages.properties`.
+  - `libs/common-web` ampliado: `BadRequestException`/`ConflictException` con `field` opcional para
+    devolver `errors: [{field, message}]`.
+  - 55 tests, incluidos uno por regla `BR-OWN-*`/`BR-PET-*`.
+- **Validación humana/automática:**
+  - `.\mvnw.cmd -B verify`: `Tests run: 55, Failures: 0, Errors: 0` en customers-service y
+    `BUILD SUCCESS` en todo el reactor.
+  - Los tests de repositorio corren contra el `schema.sql`/`data.sql` reales (no mocks), incluido el
+    constraint `unique_owner_pet_name` y el orden `@OrderBy`.
+  - El test de integración comprueba `POST → 201 + Location`, `409` por duplicado, `404` con
+    `ProblemDetail` y que `/v3/api-docs` publica los paths.
+- **Correcciones aplicadas:**
+  - La IA escribió `assertThat(owner.getHeaders().getLocation()).hasToString("/owners/11")`: el
+    header `Location` es **absoluto** y el id 11 dependía del estado de la BD. Se cambió a comparar
+    `getLocation().getPath()` con el id devuelto.
+  - Deserializar a `com.fasterxml.jackson.databind.JsonNode` con `RestClient` falla en Boot 4
+    (`HttpMessageConversionException`: los converters usan Jackson 3). Se cambió el test a `Map`,
+    más portable y sin atarse a la versión de Jackson.
+  - Un test de `PetServiceTests` decía verificar BR-PET-07 pero declaraba los argumentos invertidos
+    (`findByIdAndOwner_Id(2,7)` frente a la llamada real `(7,2)`); Mockito lo detectó como *stub*
+    innecesario. Corregido.
+  - La IA olvidó que `spring-javaformat` corre en `validate`: el primer `verify` falló por formato y
+    se resolvió ejecutando `spring-javaformat:apply` antes de compilar.
+
